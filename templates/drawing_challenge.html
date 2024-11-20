@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Challenge</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+        header nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        header nav a:hover {
+            text-decoration: underline;
+        }
+        canvas {
+            border: 2px solid #333;
+            margin: 20px;
+            background: white;
+            position: relative;
+            z-index: 1;
+        }
+        .challenge-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 640px;
+            height: 480px;
+        }
+        .challenge-image {
+            max-width: 80%;
+            max-height: 80%;
+            opacity: 0.5; /* Set transparency */
+            transform: translate(-50%, -50%);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 0;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/saved_images">Saved Images</a>
+            <a href="/challenges">Drawing Challenges</a>
+        </nav>
+    </header>
+    <h1>Drawing Challenge</h1>
+    <div class="challenge-container">
+        <div class="video-container">
+            <img src="{{ url_for('video_feed') }}" alt="Video Stream">
+        </div>
+        <img src="{{ url_for('static', filename='challenges/' + challenge_image) }}" class="challenge-image">
+    </div>
+    <br>
+    <div class="controls">
+        <button class="clear" onclick="changeColor('clear')">Clear</button>
+        <button onclick="saveImage()">Save Image</button>
+    </div>
+    <script>
+        function changeColor(color) {
+            fetch('/change_color', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ color: color }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        function saveImage() {
+            fetch('/save_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Image saved:', data.filename);
+                alert('Image saved successfully!');
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

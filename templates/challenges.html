@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Challenges</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+        header nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        header nav a:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .challenge-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .challenge-gallery .challenge-container {
+            position: relative;
+            margin: 10px;
+            cursor: pointer;
+        }
+        .challenge-gallery img {
+            border: 2px solid #333;
+            border-radius: 10px;
+            max-width: 200px;
+        }
+        footer {
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/saved_images">Saved Images</a>
+            <a href="/challenges">Drawing Challenges</a>        </nav>
+    </header>
+    <h1>Drawing Challenges</h1>
+    <div class="challenge-gallery">
+        {% for challenge in challenges %}
+            <div class="challenge-container" onclick="startChallenge('{{ challenge }}')">
+                <img src="{{ url_for('static', filename='challenges/' + challenge) }}" alt="Drawing Challenge">
+            </div>
+        {% endfor %}
+    </div>
+    <footer>
+        &copy; 2024 Hand Gesture Drawing. All rights reserved.
+    </footer>
+    <script>
+        function startChallenge(challenge) {
+            window.location.href = '/start_drawing_challenge/' + challenge;
+        }
+    </script>
+</body>
+</html>

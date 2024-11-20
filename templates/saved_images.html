@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Images</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+        header nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        header nav a:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .gallery .image-container {
+            position: relative;
+            margin: 10px;
+            text-align: center;
+        }
+        .gallery img {
+            border: 2px solid #333;
+            border-radius: 10px;
+            max-width: 200px;
+            margin-bottom: 10px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+        .button-container button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s ease;
+        }
+        .button-container .delete-button {
+            background-color: #ff4d4d;
+        }
+        .button-container button:hover {
+            background-color: #0056b3;
+        }
+        .button-container .delete-button:hover {
+            background-color: #cc0000;
+        }
+        footer {
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+        }
+        #extracted-text {
+            width: 80%;
+            background-color: #fff;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .caption-container {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .caption-text {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/saved_images">Saved Images</a>
+            <a href="/challenges">Drawing Challenges</a>
+        </nav>
+    </header>
+    <h1>Saved Images</h1>
+    <div class="gallery">
+        {% for image in images %}
+            <div class="image-container">
+                <img src="{{ url_for('static', filename='images/' + image) }}" alt="Saved Image">
+                <div class="button-container">
+                    <button onclick="extractText('{{ image }}')">Extract Text</button>
+                    <button class="delete-button" onclick="deleteImage('{{ image }}')">Delete</button>
+                    <button onclick="generateCaption('{{ image }}')">Generate Caption</button>
+                </div>
+                <div class="caption-container">
+                    <p id="caption-text-{{ image }}" class="caption-text"></p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div id="extracted-text" style="display: none;">
+        <h2>Extracted Text:</h2>
+        <pre id="text-output"></pre>
+    </div>
+    <footer>
+        &copy; 2024 Hand Gesture Drawing. All rights reserved.
+    </footer>
+    <script>
+        function deleteImage(filename) {
+            fetch('/delete_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ filename: filename }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Image deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Failed to delete image.');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        function extractText(filename) {
+            fetch('/extract_text', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ filename: filename }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const textContainer = document.getElementById('extracted-text');
+                const textOutput = document.getElementById('text-output');
+                if (data.success) {
+                    textOutput.textContent = data.text;
+                    textContainer.style.display = 'block';
+                } else {
+                    textOutput.textContent = 'Failed to extract text. Please try again.';
+                    textContainer.style.display = 'block';
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                const textContainer = document.getElementById('extracted-text');
+                const textOutput = document.getElementById('text-output');
+                textOutput.textContent = 'An error occurred while extracting text.';
+                textContainer.style.display = 'block';
+            });
+        }
+
+        function generateCaption(image) {
+            fetch('/caption_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ filename: image }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const captionTextElement = document.getElementById(`caption-text-${image}`);
+                if (data.success) {
+                    captionTextElement.textContent = "Caption: " + data.caption;
+                } else {
+                    captionTextElement.textContent = 'Failed to generate caption. Please try again.';
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                const captionTextElement = document.getElementById(`caption-text-${image}`);
+                captionTextElement.textContent = 'An error occurred while generating the caption.';
+            });
+        }
+    </script>
+</body>
+</html>
